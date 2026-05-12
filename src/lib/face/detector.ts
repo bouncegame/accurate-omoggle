@@ -6,7 +6,10 @@ import {
   type FaceLandmarkerResult,
 } from '@mediapipe/tasks-vision'
 
-const WASM_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm'
+// Served from our own origin via the `copy-mediapipe-wasm` Vite plugin
+// (see vite.config.ts) so the WASM version always matches the installed
+// @mediapipe/tasks-vision npm package and there is no CDN dependency.
+const WASM_URL = '/mediapipe'
 const MODEL_URL =
   'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task'
 

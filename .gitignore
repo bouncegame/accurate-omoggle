@@ -33,6 +33,10 @@ dist-ssr
 supabase/.temp/
 supabase/.branches/
 
+# MediaPipe WASM is copied into public/ at build time from node_modules
+# by the `copy-mediapipe-wasm` Vite plugin — don't commit the generated copy.
+public/mediapipe/
+
 # OS
 .DS_Store
 Thumbs.db
