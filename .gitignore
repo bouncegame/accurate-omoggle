@@ -1,0 +1,42 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Supabase
+.supabase/
+supabase/.temp/
+supabase/.branches/
+
+# MediaPipe WASM is copied into public/ at build time from node_modules
+# by the `copy-mediapipe-wasm` Vite plugin — don't commit the generated copy.
+public/mediapipe/
+
+# OS
+.DS_Store
+Thumbs.db
