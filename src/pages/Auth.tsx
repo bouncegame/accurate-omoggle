@@ -37,7 +37,12 @@ export function Auth() {
     e.preventDefault()
     if (busy) return
     if (!supabaseConfigured) {
-      toast({ kind: 'error', title: 'Supabase not configured', description: 'Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.' })
+      toast({
+        kind: 'error',
+        title: 'Supabase not configured',
+        description:
+          'Copy .env.example to .env.local and set real VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY values, then restart the dev server.',
+      })
       return
     }
     setBusy(true)
