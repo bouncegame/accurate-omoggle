@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import type { Rank } from '@/lib/ranks'
 import { cn } from '@/lib/cn'
 
@@ -9,53 +8,30 @@ type Props = {
   showName?: boolean
 }
 
+// Brutalist rank chip: a hard colored block + the rank name in mono caps.
+// Rank color is taken from the mid stop of the legacy gradient array so
+// every rank retains its identity (red for sub5, orange for sub7, etc.)
+// but renders as a single flat swatch with no glow.
 export function RankBadge({ rank, size = 'md', className, showName = true }: Props) {
   const sizes = {
-    xs: { pad: 'px-2 py-0.5', text: 'text-[10px]', icon: 12 },
-    sm: { pad: 'px-2.5 py-1', text: 'text-xs', icon: 14 },
-    md: { pad: 'px-3 py-1.5', text: 'text-sm', icon: 16 },
-    lg: { pad: 'px-4 py-2', text: 'text-base', icon: 20 },
+    xs: { pad: 'px-1.5 py-0.5', text: 'text-[9px]', dot: 'size-2' },
+    sm: { pad: 'px-2 py-0.5', text: 'text-[10px]', dot: 'size-2.5' },
+    md: { pad: 'px-2.5 py-1', text: 'text-[11px]', dot: 'size-3' },
+    lg: { pad: 'px-3 py-1.5', text: 'text-sm', dot: 'size-3.5' },
   } as const
   const s = sizes[size]
+  const accent = rank.gradient[1]
   return (
-    <motion.div
-      initial={{ scale: 0.92, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+    <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full font-display font-semibold uppercase tracking-wider',
+        'inline-flex items-center gap-1.5 border border-ink-500 bg-ink-900 font-mono font-bold uppercase tracking-[0.12em]',
         s.pad,
         s.text,
         className,
       )}
-      style={{
-        background: `linear-gradient(135deg, ${rank.gradient[0]}30 0%, ${rank.gradient[1]}25 50%, ${rank.gradient[2]}30 100%)`,
-        border: `1px solid ${rank.gradient[1]}50`,
-        boxShadow: `0 0 18px -2px ${rank.glow}, inset 0 0 12px -8px ${rank.glow}`,
-      }}
     >
-      <span
-        className="block rounded-full"
-        style={{
-          width: s.icon,
-          height: s.icon,
-          background: `radial-gradient(circle, ${rank.gradient[0]} 0%, ${rank.gradient[1]} 60%, ${rank.gradient[2]} 100%)`,
-          boxShadow: `0 0 14px -2px ${rank.glow}`,
-        }}
-      />
-      {showName && (
-        <span
-          style={{
-            background: rank.textGradient,
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            color: 'transparent',
-          }}
-        >
-          {rank.name}
-        </span>
-      )}
-    </motion.div>
+      <span className={s.dot} style={{ background: accent }} />
+      {showName && <span style={{ color: accent }}>{rank.name}</span>}
+    </span>
   )
 }

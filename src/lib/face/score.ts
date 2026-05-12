@@ -36,18 +36,18 @@ export type ScoreBreakdown = {
   noseRatio: number // 0..1
 }
 
+const ZERO: ScoreBreakdown = {
+  total: 0,
+  symmetry: 0,
+  proportions: 0,
+  jawline: 0,
+  eyeSpacing: 0,
+  lipRatio: 0,
+  noseRatio: 0,
+}
+
 export function scoreFace(landmarks: FaceLandmark[]): ScoreBreakdown {
-  if (!landmarks || landmarks.length < 468) {
-    return {
-      total: 0,
-      symmetry: 0,
-      proportions: 0,
-      jawline: 0,
-      eyeSpacing: 0,
-      lipRatio: 0,
-      noseRatio: 0,
-    }
-  }
+  if (!landmarks || landmarks.length < 468) return ZERO
 
   // --- normalize: face width = 1.0 ---
   const left = landmarks[IDX.leftCheek]!
@@ -55,43 +55,44 @@ export function scoreFace(landmarks: FaceLandmark[]): ScoreBreakdown {
   const top = landmarks[IDX.faceTop]!
   const bottom = landmarks[IDX.chinBottom]!
   const faceWidth = dist(left, right)
-  if (faceWidth < 1e-6) {
-    return {
-      total: 0,
-      symmetry: 0,
-      proportions: 0,
-      jawline: 0,
-      eyeSpacing: 0,
-      lipRatio: 0,
-      noseRatio: 0,
-    }
-  }
+  if (faceWidth < 1e-6) return ZERO
   const faceHeight = dist(top, bottom)
 
   // ---------------------------------------------------------------------
   // 1. SYMMETRY
-  // Midline x = midpoint of nose bridge top + chin bottom.
-  // For each (L, R) pair, distance from midline should match.
+  // The midline is the line from the nose-bridge anchor (168) to the chin
+  // (152). For each (L, R) landmark pair we measure perpendicular distance
+  // from that midline and compare. This is pose-tolerant: a slightly tilted
+  // head no longer destroys the symmetry score the way a fixed vertical
+  // x-midline did.
   // ---------------------------------------------------------------------
-  const noseBridge = landmarks[IDX.noseBridgeTop]!
-  const midX = (noseBridge.x + bottom.x) / 2
+  const m0 = landmarks[IDX.noseBridgeTop]!
+  const m1 = bottom
+  const mx = m1.x - m0.x
+  const my = m1.y - m0.y
+  const mlen = Math.sqrt(mx * mx + my * my) || 1
+  // Perpendicular distance from point p to the m0->m1 line (sign carries side).
+  const perpDist = (p: FaceLandmark): number => {
+    return ((p.x - m0.x) * my - (p.y - m0.y) * mx) / mlen
+  }
   let asymSum = 0
   for (const [li, ri] of IDX.symmetryPairs) {
     const L = landmarks[li]!
     const R = landmarks[ri]!
-    const dl = Math.abs(L.x - midX)
-    const dr = Math.abs(R.x - midX)
-    const denom = Math.max(dl, dr, 1e-6)
-    asymSum += Math.abs(dl - dr) / denom // 0 when perfectly symmetric
+    const dl = Math.abs(perpDist(L))
+    const dr = Math.abs(perpDist(R))
+    const denom = Math.max(dl, dr, faceWidth * 0.02)
+    asymSum += Math.abs(dl - dr) / denom
   }
   const avgAsym = asymSum / IDX.symmetryPairs.length
-  // 0% asym -> 1.0, 15% asym -> 0
-  const symmetry = clamp(1 - avgAsym / 0.15, 0, 1)
+  // Forgiving floor: even visibly asymmetric faces don't fall below ~0.35.
+  // 0 asym -> 1.0, 30%+ avg asym -> 0.35.
+  const symmetry = clamp(1 - avgAsym / 0.46, 0.35, 1)
 
   // ---------------------------------------------------------------------
   // 2. PROPORTIONS (rule of thirds + face aspect ratio)
-  // Face height / width target ~ 1.5
-  // brow line y vs nose tip y vs chin: thirds (each ~1/3)
+  // Vertical thirds and face aspect. Widened tolerances so a face under
+  // normal camera framing/head pose isn't punished for not being a canon.
   // ---------------------------------------------------------------------
   const browY = (landmarks[IDX.leftBrowInner]!.y + landmarks[IDX.rightBrowInner]!.y) / 2
   const noseTipY = landmarks[IDX.noseTip]!.y
@@ -104,18 +105,16 @@ export function scoreFace(landmarks: FaceLandmark[]): ScoreBreakdown {
   const t1 = third1 / totalH
   const t2 = third2 / totalH
   const t3 = third3 / totalH
-  // ideal = 1/3 each; penalize variance
   const thirdsVar = Math.abs(t1 - 1 / 3) + Math.abs(t2 - 1 / 3) + Math.abs(t3 - 1 / 3)
-  const thirdsScore = clamp(1 - thirdsVar / 0.35, 0, 1)
-  // face aspect (height / width). target ~1.5 for "balanced".
+  const thirdsScore = clamp(1 - thirdsVar / 0.55, 0.3, 1)
   const aspect = faceHeight / faceWidth
-  const aspectScore = ratioScore(aspect, 1.45, 0.18)
-  const proportions = 0.6 * thirdsScore + 0.4 * aspectScore
+  const aspectScore = ratioScore(aspect, 1.45, 0.32)
+  const proportions = clamp(0.6 * thirdsScore + 0.4 * aspectScore, 0.3, 1)
 
   // ---------------------------------------------------------------------
   // 3. JAWLINE definition
-  // Take the angle at the chin: vectors chin->jawLeft and chin->jawRight.
-  // Narrower chin angle = sharper jaw = higher score.
+  // Chin angle: 70° = razor sharp, 110° = average, 150° = soft. Real faces
+  // sit around 95–125° at typical framing, so the gradient is broadened.
   // ---------------------------------------------------------------------
   const chin = bottom
   const jl = landmarks[IDX.jawLeft]!
@@ -128,25 +127,24 @@ export function scoreFace(landmarks: FaceLandmark[]): ScoreBreakdown {
   const d2 = Math.sqrt(v2x * v2x + v2y * v2y) || 1
   const cosA = (v1x * v2x + v1y * v2y) / (d1 * d2)
   const chinAngleDeg = (Math.acos(clamp(cosA, -1, 1)) * 180) / Math.PI
-  // chinAngle: 70-90 deg = sharp/defined (1.0), 130+ = weak chin (0.2)
-  const jawline = clamp(1 - (chinAngleDeg - 75) / 70, 0.15, 1)
+  // 70° -> 1.0, 160° -> 0.3
+  const jawline = clamp(1 - (chinAngleDeg - 70) / 130, 0.3, 1)
 
   // ---------------------------------------------------------------------
   // 4. EYE SPACING
-  // Inter-eye distance (inner corners) should ~= eye width.
-  // Eye width = avg(outer-inner distance of each eye)
+  // Inter-eye distance (inner corners) ~ single eye width is canonical.
   // ---------------------------------------------------------------------
   const inter = dist(landmarks[IDX.leftEyeInner]!, landmarks[IDX.rightEyeInner]!)
   const leftEyeW = dist(landmarks[IDX.leftEyeOuter]!, landmarks[IDX.leftEyeInner]!)
   const rightEyeW = dist(landmarks[IDX.rightEyeOuter]!, landmarks[IDX.rightEyeInner]!)
   const eyeW = (leftEyeW + rightEyeW) / 2
   const eyeRatio = inter / Math.max(eyeW, 1e-6)
-  const eyeSpacing = ratioScore(eyeRatio, 1.0, 0.18)
+  const eyeSpacing = clamp(ratioScore(eyeRatio, 1.0, 0.32), 0.3, 1)
 
   // ---------------------------------------------------------------------
   // 5. LIP RATIO
-  // Lower lip thickness / upper lip thickness should be ~1.618 (golden).
-  // We measure vertical thickness of each lip.
+  // Lower lip / upper lip thickness target ~φ (1.618). Tolerance generous
+  // because lip parting changes the measurement frame-to-frame.
   // ---------------------------------------------------------------------
   const upperLipTop = landmarks[IDX.upperLipTop]!
   const upperLipBottom = landmarks[IDX.upperLipBottom]!
@@ -155,19 +153,18 @@ export function scoreFace(landmarks: FaceLandmark[]): ScoreBreakdown {
   const upperThick = Math.abs(upperLipBottom.y - upperLipTop.y)
   const lowerThick = Math.abs(lowerLipBottom.y - lowerLipTop.y)
   const lipR = lowerThick / Math.max(upperThick, 1e-6)
-  const lipRatio = ratioScore(lipR, PHI, 0.4)
+  const lipRatio = clamp(ratioScore(lipR, PHI, 0.55), 0.3, 1)
 
   // ---------------------------------------------------------------------
   // 6. NOSE RATIO
-  // Nose width should be roughly inter-pupillary / golden (~1/PHI).
-  // i.e. noseWidth / faceWidth target ~0.22-0.25
+  // Nose width / face width target ~0.235.
   // ---------------------------------------------------------------------
   const noseW = dist(landmarks[IDX.noseLeftAla]!, landmarks[IDX.noseRightAla]!)
   const noseFaceR = noseW / faceWidth
-  const noseRatio = ratioScore(noseFaceR, 0.235, 0.35)
+  const noseRatio = clamp(ratioScore(noseFaceR, 0.235, 0.5), 0.3, 1)
 
   // ---------------------------------------------------------------------
-  // weighted combination
+  // weighted combination -> 0..1
   // ---------------------------------------------------------------------
   const weighted =
     0.32 * symmetry +
@@ -177,10 +174,13 @@ export function scoreFace(landmarks: FaceLandmark[]): ScoreBreakdown {
     0.10 * lipRatio +
     0.08 * noseRatio
 
-  // Map 0..1 -> 0..10 with a slight S-curve so middling faces don't all stack
-  // around 5.0. We anchor: 0.4 -> ~4, 0.6 -> ~6.5, 0.8 -> ~8.5.
-  const curved = 10 * Math.pow(weighted, 1.15)
-  const total = clamp(curved, 0, 10)
+  // Map 0..1 -> 0..10 with a baseline floor and gentle curve. Anchors:
+  //   weighted 0.45 -> total ~6.0  (typical face under normal framing)
+  //   weighted 0.60 -> total ~7.2  (above-average)
+  //   weighted 0.75 -> total ~8.3  (model-tier framing/proportions)
+  //   weighted 0.90 -> total ~9.3
+  // No real face lands below ~4.5 because each sub-score has a 0.30 floor.
+  const total = clamp(2.5 + 7.5 * Math.pow(weighted, 0.9), 0, 10)
 
   return {
     total,

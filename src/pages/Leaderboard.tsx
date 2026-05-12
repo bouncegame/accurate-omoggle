@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Crown } from 'lucide-react'
 import { supabase, supabaseConfigured } from '@/lib/supabase'
 import type { ProfileRow } from '@/types/db'
@@ -38,28 +37,36 @@ export function Leaderboard() {
 
   return (
     <div className="mx-auto w-full max-w-4xl">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">Leaderboard</h1>
-        <p className="mt-1 text-sm text-ink-300">
-          Top 100 moggers by MogX. Climbing the ladder is the only thing that matters.
+      <div>
+        <h1 className="font-mono text-3xl font-extrabold uppercase tracking-tight md:text-4xl">
+          leaderboard
+        </h1>
+        <p className="mt-2 font-mono text-xs text-ink-300">
+          top 100 moggers by mogx. climbing the ladder is the only thing that matters.
         </p>
-      </motion.div>
+      </div>
 
-      <div className="mt-6 glass rounded-2xl">
+      <div className="mt-6 border border-ink-400 bg-ink-900">
+        <div className="grid grid-cols-[40px_1fr_120px_120px] gap-3 border-b border-ink-500 px-4 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-300">
+          <span>#</span>
+          <span>mogger</span>
+          <span>rank</span>
+          <span className="text-right">mogx</span>
+        </div>
         {loading && (
-          <div className="space-y-2 p-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-14 animate-pulse rounded-lg bg-white/[0.04]" />
+          <div className="space-y-px p-3">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-12 animate-pulse border border-ink-500 bg-ink-800" />
             ))}
           </div>
         )}
         {!loading && rows.length === 0 && (
-          <div className="px-6 py-12 text-center text-sm text-ink-300">
-            No moggers yet. <Link className="underline" to="/app/play">Be the first.</Link>
+          <div className="px-6 py-12 text-center font-mono text-xs text-ink-300">
+            no moggers yet. <Link className="text-mog-500 underline" to="/app/play">be the first.</Link>
           </div>
         )}
         {!loading && rows.length > 0 && (
-          <ul className="divide-y divide-white/5">
+          <ul className="divide-y divide-ink-500">
             {rows.map((p, i) => {
               const { current } = rankFromMogX(p.mogx)
               const isMe = user?.id === p.id
@@ -67,43 +74,33 @@ export function Leaderboard() {
                 <li
                   key={p.id}
                   className={cn(
-                    'flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-white/[0.02]',
+                    'grid grid-cols-[40px_1fr_120px_120px] items-center gap-3 px-4 py-3 transition-colors hover:bg-ink-800',
                     isMe && 'bg-mog-500/[0.06]',
                   )}
                 >
+                  <div
+                    className={cn(
+                      'font-mono text-sm font-bold tabular-nums',
+                      i === 0 ? 'text-mog-500' : i < 3 ? 'text-ink-100' : 'text-ink-400',
+                    )}
+                  >
+                    {i === 0 ? <Crown className="size-4 text-mog-500" /> : i + 1}
+                  </div>
                   <div className="flex min-w-0 items-center gap-3">
-                    <div
-                      className={cn(
-                        'flex w-9 shrink-0 items-center justify-center font-mono text-sm font-semibold tabular-nums',
-                        i === 0 ? 'text-chad-400' : i < 3 ? 'text-mog-300' : 'text-ink-400',
-                      )}
-                    >
-                      {i === 0 ? <Crown className="size-4" /> : i + 1}
-                    </div>
-                    <div
-                      className="grid size-9 shrink-0 place-items-center rounded-full font-display text-sm font-semibold text-ink-950"
-                      style={{
-                        background: `linear-gradient(135deg, ${current.gradient[0]}, ${current.gradient[2]})`,
-                      }}
-                    >
+                    <div className="grid size-8 shrink-0 place-items-center bg-mog-500 font-mono text-sm font-extrabold text-black">
                       {p.display_name.slice(0, 1).toUpperCase()}
                     </div>
                     <Link
                       to={`/app/profile/${p.handle}`}
-                      className="min-w-0 truncate text-sm font-medium text-white hover:underline"
+                      className="min-w-0 truncate font-mono text-sm font-bold uppercase tracking-tight text-white hover:text-mog-500"
                     >
                       {p.display_name}
-                      <span className="ml-1.5 text-ink-400">@{p.handle}</span>
+                      <span className="ml-1.5 normal-case font-medium text-ink-400">@{p.handle}</span>
                     </Link>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <RankBadge rank={current} size="xs" />
-                    <div className="text-right">
-                      <div className="font-mono text-sm tabular-nums text-white">
-                        {p.mogx.toLocaleString()}
-                      </div>
-                      <div className="text-[10px] uppercase tracking-wider text-ink-400">MogX</div>
-                    </div>
+                  <div><RankBadge rank={current} size="xs" /></div>
+                  <div className="text-right font-mono text-sm font-bold tabular-nums text-white">
+                    {p.mogx.toLocaleString()}
                   </div>
                 </li>
               )

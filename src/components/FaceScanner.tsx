@@ -157,7 +157,7 @@ export const FaceScanner = forwardRef<FaceScannerHandle, Props>(function FaceSca
   return (
     <div
       className={cn(
-        'relative aspect-square w-full overflow-hidden rounded-2xl bg-ink-900 ring-1 ring-white/5',
+        'relative aspect-square w-full overflow-hidden border border-ink-400 bg-ink-950',
         className,
       )}
     >
@@ -182,15 +182,10 @@ export const FaceScanner = forwardRef<FaceScannerHandle, Props>(function FaceSca
       {/* scan line */}
       {status === 'ready' && faceDetected && (
         <motion.div
-          className="pointer-events-none absolute inset-x-0 h-px"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(110,231,183,0.9) 50%, transparent 100%)',
-            boxShadow: '0 0 16px 2px rgba(110,231,183,0.7)',
-          }}
+          className="pointer-events-none absolute inset-x-0 h-px bg-mog-500"
           initial={{ y: 0 }}
           animate={{ y: '100%' }}
-          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'linear' }}
         />
       )}
 
@@ -206,8 +201,8 @@ export const FaceScanner = forwardRef<FaceScannerHandle, Props>(function FaceSca
 
       {/* label */}
       {label && (
-        <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-ink-100 ring-1 ring-white/10 backdrop-blur-sm">
-          <span className="size-1.5 rounded-full bg-mog-400" />
+        <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 border border-ink-400 bg-ink-950 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-100">
+          <span className="inline-block size-1.5 bg-mog-500" />
           {label}
         </div>
       )}
@@ -215,21 +210,24 @@ export const FaceScanner = forwardRef<FaceScannerHandle, Props>(function FaceSca
       {/* score badge */}
       {showScore && status === 'ready' && (
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
-          <div
-            className="rounded-xl bg-black/55 px-3 py-2 backdrop-blur-md ring-1 ring-white/10"
-            style={{ boxShadow: `0 0 30px -4px ${tier.glow}` }}
-          >
-            <div className="text-[10px] uppercase tracking-[0.2em] text-ink-300">
-              Live Score
+          <div className="border border-ink-400 bg-ink-950 px-3 py-2">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink-300">
+              live score
             </div>
-            <div className="font-display text-3xl font-bold leading-none tabular-nums" style={{ color: tier.color }}>
+            <div
+              className="font-mono text-3xl font-extrabold leading-none tabular-nums"
+              style={{ color: tier.color }}
+            >
               {faceDetected ? score.toFixed(2) : '--'}
             </div>
           </div>
-          <div className="rounded-xl bg-black/55 px-3 py-2 text-right backdrop-blur-md ring-1 ring-white/10">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-ink-300">Status</div>
-            <div className="text-xs font-semibold" style={{ color: faceDetected ? '#6ee7b7' : '#f59e0b' }}>
-              {faceDetected ? 'Locked' : 'Searching…'}
+          <div className="border border-ink-400 bg-ink-950 px-3 py-2 text-right">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-ink-300">status</div>
+            <div
+              className="font-mono text-xs font-bold uppercase tracking-[0.14em]"
+              style={{ color: faceDetected ? 'var(--color-mog-500)' : '#ffaa00' }}
+            >
+              {faceDetected ? 'locked' : 'searching'}
             </div>
           </div>
         </div>
@@ -240,38 +238,44 @@ export const FaceScanner = forwardRef<FaceScannerHandle, Props>(function FaceSca
         <button
           type="button"
           onClick={() => void start()}
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/70 transition-colors hover:bg-ink-950/60"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950 transition-colors hover:bg-ink-900"
         >
-          <div className="rounded-full bg-mog-500/10 p-4 ring-1 ring-mog-500/30">
-            <ScanFace className="size-8 text-mog-300" />
+          <div className="border border-mog-500 bg-ink-900 p-4">
+            <ScanFace className="size-7 text-mog-500" />
           </div>
-          <div className="text-sm font-medium text-ink-100">Start Face Scan</div>
-          <div className="px-6 text-center text-xs text-ink-300">
-            We'll request your camera and run the detection locally in your browser.
+          <div className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-mog-500">
+            start face scan
+          </div>
+          <div className="max-w-[260px] px-6 text-center font-mono text-[10px] text-ink-300">
+            we'll request your camera and run detection locally in your browser.
           </div>
         </button>
       )}
 
       {status === 'loading' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-ink-950/80">
-          <Loader2 className="size-7 animate-spin text-mog-300" />
-          <div className="text-xs text-ink-200">Loading detector…</div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950">
+          <Loader2 className="size-6 animate-spin text-mog-500" />
+          <div className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-ink-200">
+            loading detector
+          </div>
         </div>
       )}
 
       {(status === 'error' || status === 'no-permission') && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/85 p-6 text-center">
-          <div className="rounded-full bg-blood-500/15 p-3 ring-1 ring-blood-500/40">
-            <CameraOff className="size-6 text-blood-500" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950 p-6 text-center">
+          <div className="border border-blood-500 bg-ink-900 p-3">
+            <CameraOff className="size-5 text-blood-500" />
           </div>
-          <div className="text-sm font-medium text-ink-100">Camera unavailable</div>
-          <div className="text-xs text-ink-300">{errorMsg}</div>
+          <div className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-blood-500">
+            camera unavailable
+          </div>
+          <div className="max-w-[260px] font-mono text-[10px] text-ink-300">{errorMsg}</div>
           <button
             type="button"
             onClick={() => void start()}
             className="btn-ghost text-xs"
           >
-            <Camera className="size-3.5" /> Try Again
+            <Camera className="size-3.5" /> try again
           </button>
         </div>
       )}
@@ -281,27 +285,24 @@ export const FaceScanner = forwardRef<FaceScannerHandle, Props>(function FaceSca
 
 function CornerBracket({ pos, active }: { pos: 'tl' | 'tr' | 'bl' | 'br'; active: boolean }) {
   const base =
-    'pointer-events-none absolute size-7 border-mog-300/80 transition-opacity duration-200'
+    'pointer-events-none absolute size-7 border-mog-500 transition-opacity duration-200'
   const map = {
-    tl: 'left-3 top-3 border-l-2 border-t-2 rounded-tl-md',
-    tr: 'right-3 top-3 border-r-2 border-t-2 rounded-tr-md',
-    bl: 'left-3 bottom-3 border-l-2 border-b-2 rounded-bl-md',
-    br: 'right-3 bottom-3 border-r-2 border-b-2 rounded-br-md',
+    tl: 'left-3 top-3 border-l-2 border-t-2',
+    tr: 'right-3 top-3 border-r-2 border-t-2',
+    bl: 'left-3 bottom-3 border-l-2 border-b-2',
+    br: 'right-3 bottom-3 border-r-2 border-b-2',
   } as const
   return (
-    <div
-      className={cn(base, map[pos], active ? 'opacity-100' : 'opacity-30')}
-      style={active ? { boxShadow: '0 0 12px 0 rgba(110,231,183,0.5)' } : undefined}
-    />
+    <div className={cn(base, map[pos], active ? 'opacity-100' : 'opacity-30')} />
   )
 }
 
-function scoreTier(score: number): { color: string; glow: string } {
-  if (score < 3) return { color: '#9ca3af', glow: 'rgba(156,163,175,0.5)' }
-  if (score < 5) return { color: '#f43f5e', glow: 'rgba(244,63,94,0.5)' }
-  if (score < 6.5) return { color: '#f59e0b', glow: 'rgba(245,158,11,0.55)' }
-  if (score < 8) return { color: '#10b981', glow: 'rgba(16,185,129,0.6)' }
-  return { color: '#c084fc', glow: 'rgba(168,85,247,0.7)' }
+function scoreTier(score: number): { color: string } {
+  if (score < 3) return { color: '#a8a8a8' }
+  if (score < 5) return { color: '#ff2052' }
+  if (score < 6.5) return { color: '#ffaa00' }
+  if (score < 8) return { color: '#a3ff12' }
+  return { color: '#ff007a' }
 }
 
 // Lightweight mesh draw: pick a small set of "tesselation" edges from the
@@ -328,7 +329,7 @@ function drawMesh(
     ctx.scale(-1, 1)
   }
   // landmark points (sparse)
-  ctx.fillStyle = 'rgba(110,231,183,0.55)'
+  ctx.fillStyle = 'rgba(163,255,18,0.65)'
   for (let i = 0; i < landmarks.length; i += 3) {
     const p = landmarks[i]!
     ctx.beginPath()
@@ -336,7 +337,7 @@ function drawMesh(
     ctx.fill()
   }
   // a few connection lines for a clean wireframe look
-  ctx.strokeStyle = 'rgba(168,85,247,0.55)'
+  ctx.strokeStyle = 'rgba(163,255,18,0.35)'
   ctx.lineWidth = 0.8
   const path = [
     // jaw

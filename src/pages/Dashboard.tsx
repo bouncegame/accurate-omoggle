@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import {
   Crosshair,
   Flame,
@@ -52,101 +51,67 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-          Welcome back,{' '}
-          <span
-            style={{
-              background: current.textGradient,
-              WebkitBackgroundClip: 'text',
-              backgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              color: 'transparent',
-            }}
-          >
-            {profile.display_name}
-          </span>
+      <div>
+        <h1 className="font-mono text-3xl font-extrabold uppercase tracking-tight md:text-4xl">
+          welcome back, <span className="text-mog-500">{profile.display_name}</span>
         </h1>
-        <p className="mt-1 text-sm text-ink-300">
-          Your current standing on the ladder and a quick way back to mogging.
+        <p className="mt-2 font-mono text-xs text-ink-300">
+          your standing on the ladder and a quick way back to mogging.
         </p>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.05 }}
-        className="glass-strong relative overflow-hidden rounded-2xl p-6"
-      >
-        <div
-          className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full opacity-50 blur-3xl"
-          style={{ background: `radial-gradient(closest-side, ${current.glow}, transparent)` }}
-        />
+      <div className="border border-ink-400 bg-ink-900 p-6">
         <div className="mb-6 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
             <RankBadge rank={current} size="lg" />
             <div>
-              <div className="text-xs uppercase tracking-[0.2em] text-ink-400">Current rank</div>
-              <div className="text-sm text-ink-200">{current.tagline}</div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-300">current rank</div>
+              <div className="font-mono text-xs text-ink-200">{current.tagline}</div>
             </div>
           </div>
           <Link to="/app/play" className="btn-primary text-sm">
-            <Swords className="size-4" /> Queue match
+            <Swords className="size-4" /> queue match
           </Link>
         </div>
 
         <MogXBar mogx={profile.mogx} />
 
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-          <Stat icon={Trophy} label="Wins" value={profile.wins.toString()} accent="#10b981" />
-          <Stat icon={Flame} label="Win rate" value={`${winRate.toFixed(0)}%`} accent="#f59e0b" />
-          <Stat icon={Target} label="Best score" value={profile.best_score.toFixed(2)} accent="#a855f7" />
-          <Stat icon={Sparkles} label="Matches" value={profile.matches_played.toString()} accent="#6ee7b7" />
+        <div className="mt-6 grid grid-cols-2 divide-x divide-ink-500 border border-ink-500 md:grid-cols-4">
+          <Stat icon={Trophy} label="wins" value={profile.wins.toString()} />
+          <Stat icon={Flame} label="win rate" value={`${winRate.toFixed(0)}%`} />
+          <Stat icon={Target} label="best" value={profile.best_score.toFixed(2)} />
+          <Stat icon={Sparkles} label="matches" value={profile.matches_played.toString()} />
         </div>
-      </motion.div>
+      </div>
 
       <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="glass rounded-2xl p-5"
-        >
-          <SectionTitle icon={TrendingUp} title="Recent matches" />
+        <div className="border border-ink-500 bg-ink-900 p-5">
+          <SectionTitle icon={TrendingUp} title="recent matches" />
           {loading && <Skeleton rows={3} />}
           {!loading && recent.length === 0 && (
             <EmptyState
               icon={Swords}
-              title="No matches yet"
-              body="Queue up and start collecting MogX."
+              title="no matches yet"
+              body="queue up and start collecting mogx."
               cta={
                 <Link to="/app/play" className="btn-primary text-sm">
-                  <Crosshair className="size-4" /> Find a match
+                  <Crosshair className="size-4" /> find a match
                 </Link>
               }
             />
           )}
           {!loading && recent.length > 0 && (
-            <ul className="mt-3 divide-y divide-white/5">
+            <ul className="mt-4 divide-y divide-ink-500 border-t border-ink-500">
               {recent.map((m) => (
                 <MatchRowItem key={m.id} match={m} meId={user!.id} />
               ))}
             </ul>
           )}
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
-          className="glass rounded-2xl p-5"
-        >
-          <SectionTitle icon={Gauge} title="The ladder" />
-          <ul className="mt-3 space-y-2">
+        <div className="border border-ink-500 bg-ink-900 p-5">
+          <SectionTitle icon={Gauge} title="the ladder" />
+          <ul className="mt-4 divide-y divide-ink-500 border border-ink-500">
             {RANKS.map((r) => {
               const isCurrent = r.key === current.key
               const reached = profile.mogx >= r.threshold
@@ -154,9 +119,9 @@ export function Dashboard() {
                 <li
                   key={r.key}
                   className={cn(
-                    'flex items-center justify-between rounded-lg px-3 py-2 ring-1 ring-transparent transition-colors',
-                    isCurrent && 'ring-mog-500/30 bg-white/[0.03]',
-                    !reached && !isCurrent && 'opacity-60',
+                    'flex items-center justify-between gap-3 px-3 py-2',
+                    isCurrent && 'bg-mog-500/[0.06]',
+                    !reached && !isCurrent && 'opacity-50',
                   )}
                 >
                   <RankBadge rank={r} size="sm" />
@@ -167,7 +132,7 @@ export function Dashboard() {
               )
             })}
           </ul>
-        </motion.div>
+        </div>
       </div>
     </div>
   )
@@ -177,20 +142,18 @@ function Stat({
   icon: Icon,
   label,
   value,
-  accent,
 }: {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
   label: string
   value: string
-  accent: string
 }) {
   return (
-    <div className="glass rounded-xl p-4">
+    <div className="p-4">
       <div className="flex items-center justify-between">
-        <Icon className="size-4" style={{ color: accent }} />
-        <span className="text-[10px] uppercase tracking-[0.18em] text-ink-400">{label}</span>
+        <Icon className="size-3.5 text-mog-500" />
+        <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-300">{label}</span>
       </div>
-      <div className="mt-2 font-display text-2xl font-semibold tabular-nums text-white">{value}</div>
+      <div className="mt-2 font-mono text-2xl font-bold tabular-nums text-white">{value}</div>
     </div>
   )
 }
@@ -203,9 +166,9 @@ function SectionTitle({
   title: string
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <Icon className="size-4 text-mog-300" />
-      <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-ink-200">{title}</h2>
+    <div className="flex items-center gap-2 border-b border-ink-500 pb-3">
+      <Icon className="size-3.5 text-mog-500" />
+      <h2 className="font-mono text-xs font-bold uppercase tracking-[0.18em] text-ink-100">{title}</h2>
     </div>
   )
 }
@@ -214,7 +177,7 @@ function Skeleton({ rows = 3 }: { rows?: number }) {
   return (
     <div className="mt-3 space-y-2">
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="h-12 animate-pulse rounded-lg bg-white/[0.04]" />
+        <div key={i} className="h-12 animate-pulse border border-ink-500 bg-ink-800" />
       ))}
     </div>
   )
@@ -232,12 +195,12 @@ function EmptyState({
   cta?: React.ReactNode
 }) {
   return (
-    <div className="mt-4 flex flex-col items-center gap-3 rounded-xl bg-white/[0.02] py-10 text-center ring-1 ring-white/5">
-      <div className="rounded-full bg-mog-500/10 p-3 ring-1 ring-mog-500/30">
-        <Icon className="size-5 text-mog-300" />
+    <div className="mt-4 flex flex-col items-center gap-3 border border-ink-500 bg-ink-950 py-10 text-center">
+      <div className="border border-ink-500 bg-ink-900 p-3">
+        <Icon className="size-5 text-mog-500" />
       </div>
-      <div className="text-sm font-medium text-white">{title}</div>
-      <div className="px-6 text-xs text-ink-300">{body}</div>
+      <div className="font-mono text-sm font-bold uppercase tracking-tight text-white">{title}</div>
+      <div className="px-6 font-mono text-[11px] text-ink-300">{body}</div>
       {cta && <div className="mt-1">{cta}</div>}
     </div>
   )
@@ -255,19 +218,19 @@ function MatchRowItem({ match, meId }: { match: MatchRow; meId: string }) {
       <div className="flex items-center gap-3">
         <div
           className={cn(
-            'inline-flex items-center justify-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
+            'inline-flex items-center justify-center border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em]',
             won
-              ? 'bg-mog-500/15 text-mog-300 ring-1 ring-mog-500/30'
+              ? 'border-mog-500 bg-mog-500/10 text-mog-500'
               : draw
-                ? 'bg-amber-500/15 text-amber-300 ring-1 ring-amber-500/30'
-                : 'bg-blood-500/15 text-blood-500 ring-1 ring-blood-500/30',
+                ? 'border-ink-400 bg-ink-800 text-ink-200'
+                : 'border-blood-500 bg-blood-500/10 text-blood-500',
           )}
         >
-          {won ? 'Mog' : draw ? 'Draw' : 'Lost'}
+          {won ? 'mog' : draw ? 'draw' : 'lost'}
         </div>
         <div className="font-mono text-sm tabular-nums">
           <span className="text-white">{myScore?.toFixed(2) ?? '--'}</span>
-          <span className="px-1.5 text-ink-500">vs</span>
+          <span className="px-1.5 text-ink-400">vs</span>
           <span className="text-ink-300">{oppScore?.toFixed(2) ?? '--'}</span>
         </div>
       </div>
@@ -275,12 +238,14 @@ function MatchRowItem({ match, meId }: { match: MatchRow; meId: string }) {
         <div
           className={cn(
             'font-mono text-sm tabular-nums',
-            mogxGained > 0 ? 'text-mog-300' : 'text-ink-400',
+            mogxGained > 0 ? 'text-mog-500' : 'text-ink-400',
           )}
         >
-          +{mogxGained}
+          {mogxGained > 0 ? '+' : ''}{mogxGained}
         </div>
-        <div className="text-[10px] text-ink-500">{new Date(match.created_at).toLocaleString()}</div>
+        <div className="font-mono text-[10px] text-ink-400">
+          {new Date(match.created_at).toLocaleString()}
+        </div>
       </div>
     </li>
   )
