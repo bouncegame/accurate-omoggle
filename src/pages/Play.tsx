@@ -336,16 +336,16 @@ export function Play() {
     <div className="mx-auto w-full max-w-6xl">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-            {stage === 'live' ? 'Live match' : stage === 'result' ? 'Match result' : 'Find a match'}
+          <h1 className="font-mono text-3xl font-extrabold uppercase tracking-tight md:text-4xl">
+            {stage === 'live' ? 'live match' : stage === 'result' ? 'match result' : 'find a match'}
           </h1>
-          <p className="mt-1 text-sm text-ink-300">
-            {stage === 'idle' && 'Camera previews locally. Click queue to get paired with a stranger.'}
-            {stage === 'queue' && 'Looking for a worthy opponent…'}
-            {stage === 'connecting' && 'Establishing peer-to-peer video link…'}
-            {stage === 'live' && 'Whoever has the higher score when the clock hits zero takes the MogX.'}
-            {stage === 'result' && 'Match complete.'}
-            {stage === 'error' && 'Something went wrong.'}
+          <p className="mt-2 font-mono text-xs text-ink-300">
+            {stage === 'idle' && 'camera previews locally. click queue to get paired with a stranger.'}
+            {stage === 'queue' && 'looking for a worthy opponent…'}
+            {stage === 'connecting' && 'establishing peer-to-peer video link…'}
+            {stage === 'live' && 'whoever has the higher score when the clock hits zero takes the mogx.'}
+            {stage === 'result' && 'match complete.'}
+            {stage === 'error' && 'something went wrong.'}
           </p>
         </div>
         {profile && (
@@ -360,7 +360,7 @@ export function Play() {
             ref={scannerRef}
             autoStart
             mirror
-            label={profile ? `You · @${profile.handle}` : 'You'}
+            label={profile ? `you · @${profile.handle}` : 'you'}
           />
           <ScoreBar score={myScore} side="me" />
         </div>
@@ -389,19 +389,18 @@ export function Play() {
             className="mt-5 flex items-center justify-center"
           >
             <div className="relative w-full max-w-md">
-              <div className="text-center font-mono text-3xl font-bold tabular-nums text-white">
-                {(timeLeft / 1000).toFixed(1)}s
+              <div className="text-center font-mono text-4xl font-extrabold tabular-nums text-white">
+                {(timeLeft / 1000).toFixed(1)}<span className="text-ink-400">s</span>
               </div>
-              <div className="mt-2 h-2 overflow-hidden rounded-full bg-ink-800 ring-1 ring-white/5">
-                <motion.div
-                  className="h-full"
-                  initial={{ width: '100%' }}
-                  animate={{ width: `${(timeLeft / ROUND_MS) * 100}%` }}
+              <div className="mt-3 h-2 border border-ink-500 bg-ink-950">
+                <div
+                  className="h-full transition-[width] duration-100"
                   style={{
+                    width: `${(timeLeft / ROUND_MS) * 100}%`,
                     background:
                       timeLeft < 5000
-                        ? 'linear-gradient(90deg, #f43f5e, #ef4444)'
-                        : 'linear-gradient(90deg, #6ee7b7, #10b981, #a855f7)',
+                        ? 'var(--color-blood-500)'
+                        : 'var(--color-mog-500)',
                   }}
                 />
               </div>
@@ -414,26 +413,26 @@ export function Play() {
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         {stage === 'idle' && (
           <button onClick={() => void startQueue()} className="btn-primary">
-            <Crosshair className="size-4" /> Queue match
+            <Crosshair className="size-4" /> queue match
           </button>
         )}
         {(stage === 'queue' || stage === 'connecting') && (
           <button onClick={() => void skip()} className="btn-ghost">
-            <X className="size-4" /> Cancel
+            <X className="size-4" /> cancel
           </button>
         )}
         {stage === 'live' && (
           <button onClick={() => void finishMatch()} className="btn-ghost">
-            <SkipForward className="size-4" /> End early
+            <SkipForward className="size-4" /> end early
           </button>
         )}
         {(stage === 'result' || stage === 'error') && (
           <>
             <button onClick={() => void skip()} className="btn-primary">
-              <Crosshair className="size-4" /> Next match
+              <Crosshair className="size-4" /> next match
             </button>
             <Link to="/app" className="btn-ghost">
-              Back to dashboard
+              back to dashboard
             </Link>
           </>
         )}
@@ -447,25 +446,22 @@ export function Play() {
 }
 
 function ScoreBar({ score, side, muted }: { score: number; side: 'me' | 'opp'; muted?: boolean }) {
-  const color = side === 'me' ? '#10b981' : '#a855f7'
+  const color = side === 'me' ? 'var(--color-mog-500)' : 'var(--color-chad-500)'
   return (
     <div className="mt-3 flex items-center gap-3">
-      <span className="w-12 text-xs uppercase tracking-[0.18em] text-ink-400">
-        {side === 'me' ? 'You' : 'Opp.'}
+      <span className="w-12 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-ink-300">
+        {side === 'me' ? 'you' : 'opp.'}
       </span>
-      <div className="relative h-2.5 flex-1 overflow-hidden rounded-full bg-ink-800 ring-1 ring-white/5">
-        <motion.div
-          className="absolute inset-y-0 left-0"
-          initial={{ width: 0 }}
-          animate={{ width: `${(score / 10) * 100}%` }}
-          transition={{ type: 'spring', stiffness: 80, damping: 14 }}
-          style={{ background: color, boxShadow: `0 0 14px -4px ${color}` }}
+      <div className="relative h-2 flex-1 border border-ink-500 bg-ink-950">
+        <div
+          className="absolute inset-y-0 left-0 transition-[width] duration-200"
+          style={{ width: `${(score / 10) * 100}%`, background: color }}
         />
       </div>
       <span
         className={cn(
-          'w-14 text-right font-mono text-sm font-semibold tabular-nums',
-          muted ? 'text-ink-500' : '',
+          'w-14 text-right font-mono text-sm font-bold tabular-nums',
+          muted ? 'text-ink-400' : '',
         )}
         style={{ color: muted ? undefined : color }}
       >
@@ -491,7 +487,7 @@ function OpponentTile({
   errorMsg: string
 }) {
   return (
-    <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-ink-900 ring-1 ring-white/5">
+    <div className="relative aspect-square w-full overflow-hidden border border-ink-400 bg-ink-950">
       <video
         ref={videoRef}
         autoPlay
@@ -499,49 +495,53 @@ function OpponentTile({
         className="absolute inset-0 size-full object-cover"
       />
       {/* label */}
-      <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-ink-100 ring-1 ring-white/10 backdrop-blur-sm">
+      <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 border border-ink-400 bg-ink-950 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-100">
         <span
-          className={cn('size-1.5 rounded-full', remoteReady ? 'bg-chad-400' : 'bg-amber-400')}
+          className={cn('inline-block size-1.5', remoteReady ? 'bg-chad-500' : 'bg-mog-500 animate-blink')}
         />
-        Opponent {partnerHandle ? `· @${partnerHandle}` : ''}
+        opponent {partnerHandle ? `· @${partnerHandle}` : ''}
       </div>
 
       {stage === 'idle' && (
         <button
           onClick={queueAction}
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/70 transition-colors hover:bg-ink-950/60"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950 transition-colors hover:bg-ink-900"
         >
-          <div className="rounded-full bg-chad-500/10 p-4 ring-1 ring-chad-500/30">
-            <Crosshair className="size-7 text-chad-400" />
+          <div className="border border-chad-500 bg-ink-900 p-4">
+            <Crosshair className="size-6 text-chad-500" />
           </div>
-          <div className="text-sm font-semibold text-ink-100">Queue for a match</div>
-          <div className="px-6 text-center text-xs text-ink-300">
-            We'll pair you with another mogger looking for action.
+          <div className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-chad-500">
+            queue for a match
+          </div>
+          <div className="max-w-[260px] px-6 text-center font-mono text-[10px] text-ink-300">
+            we'll pair you with another mogger looking for action.
           </div>
         </button>
       )}
 
       {(stage === 'queue' || stage === 'connecting') && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/80 p-6 text-center">
-          <Loader2 className="size-7 animate-spin text-chad-400" />
-          <div className="text-sm font-semibold text-ink-100">
-            {stage === 'queue' ? 'Searching for an opponent…' : 'Connecting peer to peer…'}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950 p-6 text-center">
+          <Loader2 className="size-6 animate-spin text-chad-500" />
+          <div className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-ink-100">
+            {stage === 'queue' ? 'searching for an opponent…' : 'connecting peer to peer…'}
           </div>
-          <div className="max-w-[260px] text-xs text-ink-300">
+          <div className="max-w-[260px] font-mono text-[10px] text-ink-300">
             {stage === 'queue'
-              ? 'You\'re in the queue. The first compatible mogger gets paired automatically.'
-              : 'Negotiating WebRTC with your peer. Sit tight.'}
+              ? "you're in the queue. the first compatible mogger gets paired automatically."
+              : 'negotiating webrtc with your peer. sit tight.'}
           </div>
         </div>
       )}
 
       {stage === 'error' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950/90 p-6 text-center">
-          <div className="rounded-full bg-blood-500/15 p-3 ring-1 ring-blood-500/40">
-            <AlertTriangle className="size-6 text-blood-500" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink-950 p-6 text-center">
+          <div className="border border-blood-500 bg-ink-900 p-3">
+            <AlertTriangle className="size-5 text-blood-500" />
           </div>
-          <div className="text-sm font-medium text-ink-100">Match aborted</div>
-          <div className="text-xs text-ink-300">{errorMsg || 'Connection lost.'}</div>
+          <div className="font-mono text-xs font-bold uppercase tracking-[0.16em] text-blood-500">
+            match aborted
+          </div>
+          <div className="font-mono text-[10px] text-ink-300">{errorMsg || 'connection lost.'}</div>
         </div>
       )}
     </div>
@@ -559,10 +559,10 @@ function ResultModal({
     nextRank: Rank
   }
 }) {
-  const title = r.winner === 'me' ? 'You mogged.' : r.winner === 'opp' ? 'You got mogged.' : 'Dead even.'
+  const title = r.winner === 'me' ? 'you mogged.' : r.winner === 'opp' ? 'you got mogged.' : 'dead even.'
   const Icon = r.winner === 'me' ? Crown : r.winner === 'opp' ? Skull : PartyPopper
   const accent =
-    r.winner === 'me' ? '#a855f7' : r.winner === 'opp' ? '#f43f5e' : '#f59e0b'
+    r.winner === 'me' ? 'var(--color-mog-500)' : r.winner === 'opp' ? 'var(--color-blood-500)' : 'var(--color-chad-500)'
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -570,42 +570,42 @@ function ResultModal({
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-40 flex items-center justify-center px-4"
     >
-      <div className="absolute inset-0 bg-ink-950/85 backdrop-blur-xl" />
+      <div className="absolute inset-0 bg-ink-950/95" />
       <motion.div
-        initial={{ scale: 0.85, y: 18 }}
+        initial={{ scale: 0.96, y: 12 }}
         animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.92, y: 12 }}
-        transition={{ type: 'spring', stiffness: 240, damping: 20 }}
-        className="glass-strong relative w-full max-w-md overflow-hidden rounded-2xl p-7 text-center"
-        style={{ boxShadow: `0 30px 80px -20px ${accent}55` }}
+        exit={{ scale: 0.98, y: 8 }}
+        transition={{ duration: 0.18, ease: 'linear' }}
+        className="relative w-full max-w-md border-2 border-ink-100 bg-ink-950 p-7 text-center"
+        style={{ borderColor: accent }}
       >
         <div
-          className="mx-auto mb-3 inline-flex size-14 items-center justify-center rounded-full"
-          style={{ background: `${accent}20`, boxShadow: `0 0 30px -6px ${accent}` }}
+          className="mx-auto mb-4 inline-flex size-12 items-center justify-center border-2"
+          style={{ borderColor: accent }}
         >
-          <Icon className="size-7" style={{ color: accent }} />
+          <Icon className="size-6" style={{ color: accent }} />
         </div>
-        <h2 className="font-display text-3xl font-bold" style={{ color: accent }}>
+        <h2 className="font-mono text-3xl font-extrabold uppercase tracking-tight" style={{ color: accent }}>
           {title}
         </h2>
-        <div className="mt-4 flex items-center justify-center gap-3 text-sm text-ink-200">
+        <div className="mt-5 flex items-center justify-center gap-3 font-mono text-xs uppercase tracking-[0.14em] text-ink-300">
           <span>
-            <span className="text-ink-400">MogX</span>{' '}
-            <span className="font-mono text-base font-semibold text-white">+{r.mogxDelta}</span>
+            <span className="text-ink-400">mogx</span>{' '}
+            <span className="text-base font-bold text-white">{r.mogxDelta >= 0 ? '+' : ''}{r.mogxDelta}</span>
           </span>
-          <span className="text-ink-500">→</span>
+          <span className="text-ink-400">→</span>
           <span>
-            <span className="font-mono text-base font-semibold text-white">
+            <span className="text-base font-bold tabular-nums text-white">
               {r.newMogx.toLocaleString()}
             </span>{' '}
             <span className="text-ink-400">total</span>
           </span>
         </div>
-        <div className="mt-5 flex items-center justify-center gap-3">
+        <div className="mt-6 flex items-center justify-center gap-3">
           <RankBadge rank={r.prevRank} size="sm" />
           {r.prevRank.key !== r.nextRank.key && (
             <>
-              <span className="text-ink-500">→</span>
+              <span className="font-mono text-ink-400">→</span>
               <RankBadge rank={r.nextRank} size="md" />
             </>
           )}

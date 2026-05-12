@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Crosshair, Gauge, LayoutDashboard, LogOut, Sparkles, Trophy } from 'lucide-react'
+import { Crosshair, Gauge, LayoutDashboard, LogOut, Trophy } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useAuth } from '@/store/auth'
 import { rankFromMogX } from '@/lib/ranks'
@@ -15,10 +15,10 @@ type NavItem = {
 }
 
 const NAV: readonly NavItem[] = [
-  { to: '/app', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/app/play', label: 'Play', icon: Crosshair },
-  { to: '/app/calibrate', label: 'Calibrate', icon: Gauge },
-  { to: '/app/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { to: '/app', label: 'dashboard', icon: LayoutDashboard, end: true },
+  { to: '/app/play', label: 'play', icon: Crosshair },
+  { to: '/app/calibrate', label: 'calibrate', icon: Gauge },
+  { to: '/app/leaderboard', label: 'leaderboard', icon: Trophy },
 ]
 
 export function AppLayout() {
@@ -27,10 +27,10 @@ export function AppLayout() {
 
   return (
     <div className="relative mx-auto flex min-h-dvh w-full max-w-7xl">
-      <aside className="sticky top-0 hidden h-dvh w-[244px] shrink-0 flex-col border-r border-white/5 px-4 py-5 md:flex">
+      <aside className="sticky top-0 hidden h-dvh w-[244px] shrink-0 flex-col border-r border-ink-500 px-4 py-5 md:flex">
         <Logo size="md" />
 
-        <nav className="mt-8 flex flex-col gap-1">
+        <nav className="mt-10 flex flex-col gap-0 border border-ink-500 divide-y divide-ink-500">
           {NAV.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -38,20 +38,17 @@ export function AppLayout() {
               end={end}
               className={({ isActive }) =>
                 cn(
-                  'group relative inline-flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                  'group relative inline-flex items-center gap-3 px-3 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.12em] transition-colors',
                   isActive
-                    ? 'bg-white/[0.06] text-white'
-                    : 'text-ink-300 hover:bg-white/[0.03] hover:text-white',
+                    ? 'bg-mog-500 text-black'
+                    : 'text-ink-300 hover:bg-ink-800 hover:text-white',
                 )
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon className={cn('size-4', isActive ? 'text-mog-300' : 'text-ink-400 group-hover:text-ink-200')} />
+                  <Icon className={cn('size-3.5', isActive ? 'text-black' : 'text-ink-400 group-hover:text-mog-500')} />
                   {label}
-                  {isActive && (
-                    <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r-full bg-mog-400" />
-                  )}
                 </>
               )}
             </NavLink>
@@ -67,15 +64,15 @@ export function AppLayout() {
               toast({ kind: 'info', title: 'Signed out' })
               navigate('/')
             }}
-            className="mt-3 inline-flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-300 transition-colors hover:bg-white/[0.04] hover:text-white"
+            className="mt-3 inline-flex w-full items-center gap-2 border border-ink-500 px-3 py-2 font-mono text-xs font-bold uppercase tracking-[0.12em] text-ink-300 transition-colors hover:bg-blood-500 hover:text-white hover:border-blood-500"
           >
-            <LogOut className="size-4" /> Sign out
+            <LogOut className="size-3.5" /> sign out
           </button>
         </div>
       </aside>
 
       {/* mobile top bar */}
-      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between border-b border-white/5 bg-ink-950/80 px-4 py-3 backdrop-blur-md md:hidden">
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between border-b border-ink-500 bg-ink-950 px-4 py-3 md:hidden">
         <Logo size="sm" />
         {profile && (
           <RankBadge rank={rankFromMogX(profile.mogx).current} size="sm" />
@@ -87,7 +84,7 @@ export function AppLayout() {
       </main>
 
       {/* mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-white/5 bg-ink-950/90 backdrop-blur-md md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-ink-500 bg-ink-950 md:hidden">
         {NAV.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -95,12 +92,12 @@ export function AppLayout() {
             end={end}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium uppercase tracking-wider',
-                isActive ? 'text-mog-300' : 'text-ink-400',
+                'flex flex-col items-center justify-center gap-1 py-2.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] transition-colors',
+                isActive ? 'text-mog-500' : 'text-ink-400 hover:text-white',
               )
             }
           >
-            <Icon className="size-5" />
+            <Icon className="size-4" />
             {label}
           </NavLink>
         ))}
@@ -112,33 +109,25 @@ export function AppLayout() {
 function SidebarProfile() {
   const { profile } = useAuth()
   if (!profile) return null
-  const { current } = rankFromMogX(profile.mogx)
   return (
     <NavLink
       to={`/app/profile/${profile.handle}`}
-      className="glass block rounded-xl p-3 transition-colors hover:bg-white/[0.06]"
+      className="block border border-ink-500 bg-ink-900 p-3 transition-colors hover:border-mog-500"
     >
       <div className="flex items-center gap-3">
-        <div
-          className="grid size-10 shrink-0 place-items-center rounded-full font-display text-base font-semibold text-ink-950"
-          style={{
-            background: `linear-gradient(135deg, ${current.gradient[0]}, ${current.gradient[2]})`,
-            boxShadow: `0 0 14px -4px ${current.glow}`,
-          }}
-        >
+        <div className="grid size-9 shrink-0 place-items-center bg-mog-500 font-mono text-base font-extrabold text-black">
           {profile.display_name.slice(0, 1).toUpperCase()}
         </div>
         <div className="min-w-0">
-          <div className="truncate text-sm font-medium text-white">{profile.display_name}</div>
-          <div className="truncate text-[11px] text-ink-400">@{profile.handle}</div>
+          <div className="truncate font-mono text-xs font-bold uppercase tracking-tight text-white">
+            {profile.display_name}
+          </div>
+          <div className="truncate font-mono text-[10px] text-ink-400">@{profile.handle}</div>
         </div>
       </div>
-      <div className="mt-2 flex items-center justify-between text-[11px]">
-        <span className="inline-flex items-center gap-1 text-ink-300">
-          <Sparkles className="size-3" />
-          <span className="font-mono tabular-nums">{profile.mogx.toLocaleString()}</span>
-        </span>
-        <span className="text-ink-400">MogX</span>
+      <div className="mt-3 flex items-center justify-between border-t border-ink-500 pt-2 font-mono text-[10px] uppercase tracking-[0.14em]">
+        <span className="tabular-nums text-mog-500">{profile.mogx.toLocaleString()}</span>
+        <span className="text-ink-400">mogx</span>
       </div>
     </NavLink>
   )

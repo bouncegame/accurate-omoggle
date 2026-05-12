@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, Info, TriangleAlert, X } from 'lucide-react'
 import { create } from 'zustand'
-import { useEffect } from 'react'
 import { cn } from '@/lib/cn'
 
 export type ToastKind = 'success' | 'error' | 'info'
@@ -46,36 +45,43 @@ export function ToastHost() {
 }
 
 function ToastCard({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
-  useEffect(() => {
-    /* lifecycle handled by store */
-  }, [])
   const Icon = toast.kind === 'success' ? CheckCircle2 : toast.kind === 'error' ? TriangleAlert : Info
   const accent =
     toast.kind === 'success'
-      ? 'text-mog-300'
+      ? 'text-mog-500'
       : toast.kind === 'error'
         ? 'text-blood-500'
-        : 'text-chad-400'
+        : 'text-white'
+  const tag =
+    toast.kind === 'success'
+      ? 'OK'
+      : toast.kind === 'error'
+        ? 'ERR'
+        : 'INFO'
   return (
     <motion.div
       layout
-      initial={{ x: 40, opacity: 0, scale: 0.95 }}
-      animate={{ x: 0, opacity: 1, scale: 1 }}
-      exit={{ x: 40, opacity: 0, scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-      className="pointer-events-auto flex items-start gap-3 rounded-xl bg-ink-800/90 p-3 pr-2 shadow-2xl ring-1 ring-white/10 backdrop-blur-xl"
+      initial={{ x: 16, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 16, opacity: 0 }}
+      transition={{ duration: 0.12, ease: 'easeOut' }}
+      className="pointer-events-auto flex items-start gap-3 border border-ink-400 bg-ink-900 p-3 pr-2"
     >
-      <Icon className={cn('mt-0.5 size-5 shrink-0', accent)} />
+      <span className={cn('mt-0.5 inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em]', accent)}>
+        <Icon className="size-3.5" />
+        {tag}
+      </span>
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium text-ink-100">{toast.title}</div>
+        <div className="font-mono text-sm font-semibold text-white">{toast.title}</div>
         {toast.description && (
-          <div className="mt-0.5 text-xs text-ink-300">{toast.description}</div>
+          <div className="mt-0.5 font-mono text-[11px] text-ink-300">{toast.description}</div>
         )}
       </div>
       <button
         type="button"
         onClick={onDismiss}
-        className="rounded p-1 text-ink-400 transition-colors hover:bg-white/5 hover:text-ink-100"
+        className="p-1 text-ink-300 transition-colors hover:bg-ink-100 hover:text-black"
+        aria-label="Dismiss"
       >
         <X className="size-4" />
       </button>

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, Loader2, Lock, Mail, ScanFace, UserCircle2 } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Loader2, ScanFace } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { supabase, supabaseConfigured } from '@/lib/supabase'
 import { useAuth } from '@/store/auth'
 import { toast } from '@/components/ui/Toast'
+import { cn } from '@/lib/cn'
 
 type Mode = 'signin' | 'signup'
 
@@ -91,53 +91,41 @@ export function Auth() {
     <div className="relative flex min-h-dvh items-center justify-center px-4 py-10">
       <Link
         to="/"
-        className="absolute left-5 top-5 inline-flex items-center gap-1.5 text-sm text-ink-300 transition-colors hover:text-white"
+        className="absolute left-5 top-5 inline-flex items-center gap-1.5 font-mono text-xs font-bold uppercase tracking-[0.16em] text-ink-300 transition-colors hover:text-mog-500"
       >
-        <ArrowLeft className="size-4" /> Back
+        <ArrowLeft className="size-3.5" /> back
       </Link>
 
       <div className="w-full max-w-md">
-        <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-8 flex flex-col items-start">
           <Logo size="md" />
-          <h1 className="mt-6 font-display text-3xl font-bold tracking-tight md:text-4xl">
-            {mode === 'signin' ? 'Welcome back, mogger.' : 'Step into the lobby.'}
+          <h1 className="mt-8 font-mono text-3xl font-extrabold uppercase leading-tight tracking-tight md:text-4xl">
+            {mode === 'signin' ? <>welcome back,<br />mogger.</> : <>step into<br />the lobby.</>}
           </h1>
-          <p className="mt-2 text-sm text-ink-300">
+          <p className="mt-3 font-mono text-xs text-ink-300">
             {mode === 'signin'
-              ? 'Pick up where you left off and queue your next match.'
-              : 'Create an account to start scanning and stacking MogX.'}
+              ? 'pick up where you left off and queue your next match.'
+              : 'create an account to start scanning and stacking mogx.'}
           </p>
         </div>
 
-        <div className="glass-strong relative overflow-hidden rounded-2xl p-6">
+        <div className="border border-ink-400 bg-ink-900 p-6">
           <ModeSwitcher mode={mode} setMode={setMode} />
 
           <form onSubmit={submit} className="mt-6 space-y-4">
-            <AnimatePresence mode="wait" initial={false}>
-              {mode === 'signup' && (
-                <motion.div
-                  key="handle"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Field
-                    icon={UserCircle2}
-                    label="Handle"
-                    type="text"
-                    value={handle}
-                    onChange={setHandle}
-                    placeholder="e.g. jawmaxxer"
-                    autoComplete="username"
-                    maxLength={20}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {mode === 'signup' && (
+              <Field
+                label="handle"
+                type="text"
+                value={handle}
+                onChange={setHandle}
+                placeholder="e.g. jawmaxxer"
+                autoComplete="username"
+                maxLength={20}
+              />
+            )}
             <Field
-              icon={Mail}
-              label="Email"
+              label="email"
               type="email"
               value={email}
               onChange={setEmail}
@@ -146,8 +134,7 @@ export function Auth() {
               required
             />
             <Field
-              icon={Lock}
-              label="Password"
+              label="password"
               type="password"
               value={password}
               onChange={setPassword}
@@ -162,18 +149,18 @@ export function Auth() {
                 <Loader2 className="size-4 animate-spin" />
               ) : mode === 'signin' ? (
                 <>
-                  Enter the lobby <ArrowRight className="size-4" />
+                  enter the lobby <ArrowRight className="size-4" />
                 </>
               ) : (
                 <>
-                  Create my profile <ScanFace className="size-4" />
+                  create my profile <ScanFace className="size-4" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-5 text-center text-xs text-ink-400">
-            By continuing you agree the score is a geometric game, not a verdict on your worth.
+          <div className="mt-6 border-t border-ink-500 pt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-400">
+            by continuing you agree the score is a geometric game, not a verdict on your worth.
           </div>
         </div>
       </div>
@@ -183,27 +170,20 @@ export function Auth() {
 
 function ModeSwitcher({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void }) {
   return (
-    <div className="relative inline-flex w-full rounded-xl bg-ink-900 p-1 ring-1 ring-white/5">
+    <div className="grid grid-cols-2 border border-ink-500">
       {(['signin', 'signup'] as const).map((m) => (
         <button
           key={m}
           type="button"
           onClick={() => setMode(m)}
-          className="relative z-10 flex-1 rounded-lg px-3 py-2 text-sm font-medium text-ink-200 transition-colors data-[active=true]:text-white"
-          data-active={mode === m}
-        >
-          {mode === m && (
-            <motion.span
-              layoutId="mode-pill"
-              className="absolute inset-0 -z-10 rounded-lg"
-              style={{
-                background: 'linear-gradient(135deg, rgba(16,185,129,0.25), rgba(168,85,247,0.25))',
-                border: '1px solid rgba(255,255,255,0.1)',
-              }}
-              transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-            />
+          className={cn(
+            'px-3 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.14em] transition-colors',
+            mode === m
+              ? 'bg-mog-500 text-black'
+              : 'bg-transparent text-ink-300 hover:text-white',
           )}
-          {m === 'signin' ? 'Sign in' : 'Create account'}
+        >
+          {m === 'signin' ? 'sign in' : 'create account'}
         </button>
       ))}
     </div>
@@ -211,7 +191,6 @@ function ModeSwitcher({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => voi
 }
 
 function Field({
-  icon: Icon,
   label,
   type,
   value,
@@ -222,7 +201,6 @@ function Field({
   minLength,
   maxLength,
 }: {
-  icon: React.ComponentType<{ className?: string }>
   label: string
   type: string
   value: string
@@ -235,23 +213,18 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-ink-300">
-        {label}
-      </span>
-      <div className="relative">
-        <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-400" />
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          autoComplete={autoComplete}
-          required={required}
-          minLength={minLength}
-          maxLength={maxLength}
-          className="input-field pl-10"
-        />
-      </div>
+      <span className="label-caps mb-1.5 block">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        required={required}
+        minLength={minLength}
+        maxLength={maxLength}
+        className="input-field"
+      />
     </label>
   )
 }
